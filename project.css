@@ -1,0 +1,658 @@
+/* ============================================================
+   Project page — shared layout for individual portfolio pieces
+   (Metamorphosis, MPC Logo, and future additions).
+   Matches the reference format: image left, title + meta right,
+   generous open space below the meta line for write-up copy.
+   ============================================================ */
+
+:root {
+  --ink: #111111;
+  --meta-gray: #8c8c8c;
+  --caption-gray: #999999;
+  --page-bg: #ffffff;
+  --font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--page-bg);
+  color: var(--ink);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Small, unobtrusive way back to the menu screen */
+.back-link {
+  position: fixed;
+  top: 22px;
+  left: 24px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--meta-gray);
+  text-decoration: none;
+  z-index: 10;
+}
+
+.back-link:hover { color: var(--ink); }
+
+.project {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 5vw;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 9vh 6vw 10vh;
+}
+
+/* ---- Image column ---- */
+.project-media {
+  flex: 0 1 46%;
+  max-width: 780px;
+  min-width: 320px;
+  padding-top: 10px;
+}
+
+.project-image-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--ink);
+  display: block;
+}
+
+.project-image-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Video variant — same black 3:2 frame as photos, but filled by an
+   embedded iframe (e.g. YouTube) instead of an <img> */
+.project-image-frame iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+}
+
+/* Live-site preview — the iframe is just a visual snapshot; clicks pass
+   straight through to the wrapping <a> so the whole frame acts as one
+   link out to the actual site (used by e.g. To Live and Die in LA). */
+.project-live-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.2s ease;
+}
+
+.project-live-preview:hover {
+  opacity: 0.92;
+}
+
+.project-live-preview iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  pointer-events: none;
+}
+
+/* Frameless variant — for assets (like logos) that already sit on
+   transparent/white and shouldn't be cropped or boxed */
+.project-image-frame.frameless {
+  aspect-ratio: auto;
+  background: none;
+}
+
+.project-image-frame.frameless img,
+.project-image-frame.frameless video {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* A second media block stacked beneath the first (e.g. a video under
+   the logo), aligned to the same width/shape via .frameless. */
+.project-media-secondary {
+  margin-top: 28px;
+}
+
+.project-caption {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--caption-gray);
+}
+
+/* ---- Info column ---- */
+.project-info {
+  flex: 1 1 0%;
+  min-width: 280px;
+  padding-top: 6px;
+}
+
+.project-title {
+  margin: 0 0 14px;
+  font-size: clamp(2.2rem, 4vw, 4.2rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.project-meta {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--meta-gray);
+}
+
+/* Reserved space for the write-up. Empty for now — add copy here
+   directly in the HTML (see comment inside project-body below). */
+.project-body {
+  margin-top: 56px;
+  max-width: 520px;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #333333;
+}
+
+@media (max-width: 860px) {
+  .project {
+    flex-direction: column;
+    padding: 9vh 7vw 8vh;
+  }
+  .project-media {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* ============================================================
+   ABOUT PAGE — bio, headshot + strip, social icons, quote,
+   programs/clients lines. Full-width layout (not the boxed
+   .project layout above), matching the About reference design.
+   ============================================================ */
+
+.about-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: clamp(20px, 3vw, 40px);
+  padding: clamp(72px, 10vh, 96px) clamp(20px, 3vw, 40px) 0;
+}
+
+.about-left {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.about-title {
+  margin: 0;
+  font-size: clamp(2rem, 6vh, 6.5rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+/* Bio copy sits here — sized to shrink gracefully rather than
+   reserve a fixed block of empty space, since it's real text now. */
+.about-bio {
+  margin-top: clamp(10px, 2vh, 32px);
+  max-width: 900px;
+  font-size: clamp(0.95rem, 2vh, 1.2rem);
+  line-height: 1.6;
+  color: #333333;
+}
+
+.about-bio p {
+  margin: 0;
+}
+
+.about-media {
+  flex: 0 0 auto;
+  min-width: 0;
+  width: min(28vw, 40vh, 780px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.about-photo {
+  width: 100%;
+  display: block;
+}
+
+.about-photo img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.about-strip {
+  width: 100%;
+  display: flex;
+  margin-top: -1px;
+}
+
+.about-strip img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.about-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: clamp(10px, 1.6vw, 32px);
+  padding: clamp(6px, 1.2vh, 14px) 4px 0;
+}
+
+.about-icons a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  line-height: 0;
+  text-decoration: none;
+}
+
+.about-icons svg {
+  width: clamp(16px, 2.4vh, 34px);
+  height: clamp(16px, 2.4vh, 34px);
+}
+
+.about-arena {
+  font-weight: 800;
+  font-size: clamp(14px, 2vh, 28px);
+  letter-spacing: -1.5px;
+}
+
+.about-lower {
+  margin-top: clamp(-12px, -1.2vh, -6px);
+  padding: 0 clamp(20px, 3vw, 40px) calc(clamp(16px, 3vh, 32px) + 50px);
+  max-width: 1500px;
+}
+
+.about-quote {
+  font-style: italic;
+  font-size: clamp(0.8rem, 1.6vh, 1.2rem);
+  line-height: 1.5;
+  margin: clamp(-10px, -0.8vh, -5px) 0 clamp(24px, 3vh, 34px);
+  max-width: 1400px;
+}
+
+.about-quote span {
+  display: block;
+  font-style: normal;
+  margin-top: 4px;
+}
+
+.about-experience {
+  margin: 0 0 clamp(8px, 1.3vh, 14px);
+  font-size: clamp(1.05rem, 2vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.about-line {
+  font-size: clamp(0.8rem, 1.35vh, 1rem);
+  line-height: 1.5;
+  margin: 0 0 clamp(6px, 1.3vh, 14px);
+}
+
+.about-line strong {
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .about-header {
+    flex-direction: column;
+    padding: 24px 24px 0;
+  }
+  .about-media {
+    width: 100%;
+  }
+  .about-lower {
+    padding: 4vh 24px calc(6vh + 60px);
+  }
+}
+
+/* ============================================================
+   MULTI-MEDIA PROJECT PAGES — reuses the .project header (image
+   left, title/meta right) then adds a grid of video clips and an
+   optional audio player below. Used by Tree of Light and future
+   projects with more than one media asset.
+   ============================================================ */
+
+/* Tightens the header's bottom padding when a media grid follows
+   directly beneath it, so the two sections don't double up space. */
+.project.tree-header,
+.project.audio-header {
+  padding-bottom: 2vh;
+}
+
+.media-grid-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2vh 6vw 2vh;
+}
+
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6vh 4vw;
+}
+
+.media-grid-item video {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  background: var(--ink);
+  object-fit: cover;
+  display: block;
+}
+
+.media-grid-caption {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--caption-gray);
+}
+
+.audio-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2vh 6vw 10vh;
+}
+
+.audio-player {
+  width: min(360px, 100%);
+  display: block;
+}
+
+.audio-caption {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--caption-gray);
+}
+
+@media (max-width: 860px) {
+  .media-grid {
+    grid-template-columns: 1fr;
+    gap: 5vh 0;
+  }
+  .media-grid-section {
+    padding: 1vh 7vw 1vh;
+  }
+  .audio-section {
+    padding: 2vh 7vw 8vh;
+  }
+}
+
+/* ============================================================
+   CONTACT — fixed to the viewport, bottom-right of the About
+   page, unaffected by scrolling or content height
+   ============================================================ */
+.contact {
+  position: fixed;
+  right: 24px;
+  bottom: 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: var(--page-bg);
+  z-index: 10;
+}
+
+.contact a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.contact a:hover { text-decoration: underline; }
+/* ============================================================
+   MPC LOGO + VIDEO — logo stacked above video, both sized to
+   fill the column width but height-capped so the pair always
+   fits one screen. Top of the stack aligns with the project
+   title since this sits inside the normal .project header row
+   (align-items: flex-start).
+   ============================================================ */
+
+.mpc-media-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(12px, 1.8vh, 20px);
+}
+
+.mpc-media-item {
+  max-width: 100%;
+}
+
+.mpc-media-item img,
+.mpc-media-item video {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: clamp(220px, 42vh, 460px);
+  object-fit: contain;
+}
+
+[data-lightbox] {
+  cursor: zoom-in;
+}
+
+.lightbox-expand-btn {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 4;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 1.15rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-in;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.lightbox-expand-btn:hover {
+  background: rgba(0, 0, 0, 0.82);
+  transform: scale(1.08);
+}
+
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 8, 8, 0.94);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
+  padding: 6vh 5vw;
+}
+
+.lightbox-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lightbox-close {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  z-index: 1002;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: scale(1.06);
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 92vw;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lightbox-content img,
+.lightbox-content video {
+  display: block;
+  max-width: 92vw;
+  max-height: 82vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background: #000;
+}
+
+.lightbox-content iframe {
+  display: block;
+  width: min(92vw, 1120px);
+  aspect-ratio: 16 / 9;
+  height: auto;
+  max-height: 82vh;
+  border: 0;
+  background: #000;
+}
+
+.lightbox-caption {
+  margin: 14px 0 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #cfcfcf;
+  text-align: center;
+  max-width: 80vw;
+}
+
+@media (max-width: 640px) {
+  .lightbox-close {
+    top: 12px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+    font-size: 1.35rem;
+  }
+  .lightbox-expand-btn {
+    right: 10px;
+    bottom: 10px;
+    width: 36px;
+    height: 36px;
+  }
+}
+/* ============================================================
+   AUDIO WORKS '24-'26 — compact header (smaller image frame than
+   other single-image pages, to leave vertical room below) plus a
+   3x3 grid of native <audio controls> players, each with its own
+   subheading below it. Sized in vh/clamp() so the whole page —
+   header + all nine players — fits one viewport with no
+   scrolling, matching the zero-scroll rule used everywhere else
+   on the site.
+   ============================================================ */
+
+.audio-grid-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 6vw 1vh;
+}
+
+.audio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(6px, 1.2vh, 14px) 4vw;
+}
+
+.audio-grid-player {
+  width: 100%;
+  display: block;
+  height: 28px;
+}
+
+.audio-grid-caption {
+  margin: 1em 0 0;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--caption-gray);
+}
+
+@media (max-width: 860px) {
+  .audio-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.6vh 4vw;
+  }
+}
+
+@media (max-width: 560px) {
+  .audio-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   SITE-WIDE COPYRIGHT MARK — bottom-left on every page
+   ============================================================ */
+.site-copyright {
+  position: fixed;
+  left: 16px;
+  bottom: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: #000000;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  pointer-events: none;
+}
+
+.site-copyright img {
+  width: 20px;
+  height: 20px;
+  display: block;
+  object-fit: contain;
+  aspect-ratio: 1 / 1; 
+  opacity: 0.6;
+}

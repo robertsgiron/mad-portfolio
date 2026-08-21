@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio — Menu</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- TOP ZONE: dense field of glitching holographic bars + glitching red hairlines,
+       Heat-palette (+ blue tones), white bg. All 13 shapes (10 bars + 3 lines) swap
+       slots via script.js; hovering a shape freezes every other shape in place and
+       lets only the hovered one keep glitching. -->
+  <div class="bar-zone" id="barZone">
+    <div class="grain" aria-hidden="true"></div>
+    <div class="bars" id="bars">
+      <!-- 13 slots, 13 shapes (10 bars + 3 static-red-but-now-mobile hairlines) -->
+      <div class="slot" data-slot="0"><div class="shape bar" data-shape="0"></div></div>
+      <div class="slot" data-slot="1"><div class="shape bar" data-shape="1"></div></div>
+      <div class="slot" data-slot="2"><div class="shape line" data-shape="2"></div></div>
+      <div class="slot" data-slot="3"><div class="shape bar" data-shape="3"></div></div>
+      <div class="slot" data-slot="4"><div class="shape bar" data-shape="4"></div></div>
+      <div class="slot" data-slot="5"><div class="shape bar" data-shape="5"></div></div>
+      <div class="slot" data-slot="6"><div class="shape line" data-shape="6"></div></div>
+      <div class="slot" data-slot="7"><div class="shape bar" data-shape="7"></div></div>
+      <div class="slot" data-slot="8"><div class="shape bar" data-shape="8"></div></div>
+      <div class="slot" data-slot="9"><div class="shape bar" data-shape="9"></div></div>
+      <div class="slot" data-slot="10"><div class="shape line" data-shape="10"></div></div>
+      <div class="slot" data-slot="11"><div class="shape bar" data-shape="11"></div></div>
+      <div class="slot" data-slot="12"><div class="shape bar" data-shape="12"></div></div>
+    </div>
+  </div>
+
+  <!-- CENTERED CONTENT: everything here is centered except the bars above and the fixed contact footer -->
+  <main class="content">
+    <a class="video-frame" href="about.html" id="bioLink" aria-label="View bio">
+      <video
+        class="hero-video"
+        autoplay
+        muted
+        loop
+        playsinline
+        disablepictureinpicture
+        preload="auto">
+        <source src="assets/hero-loop.mp4" type="video/mp4">
+      </video>
+    </a>
+    <p class="bio-caption">click here for bio</p>
+
+    <nav class="track-list" aria-label="Projects">
+      <a class="track" href="tree-of-light.html">Tree of Light</a>
+      <a class="track" href="to-live-and-die-in-la.html">To Live and Die in LA</a>
+      <a class="track" href="metamorphosis.html">Metamorphosis</a>
+      <a class="track" href="goodbye-horses.html">Goodbye Horses</a>
+          <a class="track" href="audioworks.html">Audio Works '24-'26</a>
+      <a class="track" href="mpc-logo.html">Music Production Club</a>
+    </nav>
+  </main>
+  <script src="script.js"></script>
+  <div class="site-copyright">
+  <img src="assets/copyright-mark.png" alt="" width="40" height="30">
+  <span>Robert Giron 2026</span>
+</div>
+</body>
+</html>

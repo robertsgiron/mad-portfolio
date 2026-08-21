@@ -1,0 +1,5 @@
+Model Provider: Anthropic
+Model Name and Version: Claude Sonnet 5
+App used: Claude web version
+Conversations share link: https://claude.ai/share/c51aee16-dbeb-4d29-9671-c991034a2312
+ - Notes: PDF file provided under giron_hw_02.pdf
