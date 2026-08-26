@@ -1,33 +1,38 @@
 /* ==================================================================
-   Bar zone glitch system — v4 (fixed-size holographic bars + red
-   lines with mouse-driven movement, per-slot "piano key" hover,
-   tunable speed/randomness)
+   Bar zone glitch system — v5 (fixed-size holographic bars + red
+   lines that roam freely across the whole strip, per-slot "piano
+   key" hover, tunable speed/randomness)
    ------------------------------------------------------------------
    The top strip is divided into 13 fixed, non-overlapping "slots".
-   10 slots hold holographic bars, which keep swapping places at
-   random on a timer (the original "glitch" behavior). The other 3
-   slots hold red hairlines, which no longer swap or glitch — instead
-   they jitter randomly along the x-axis while the user's mouse is
-   moving, and freeze in whatever position they're in the instant the
-   mouse stops moving.
+   10 slots hold holographic bars, which keep swapping places with
+   each other at random on a timer (the original "glitch" behavior).
+   Bars only ever trade among themselves, so they permanently occupy
+   the same 10 slot columns — the other 3 slot columns are always
+   bar-free space.
 
-   Each shape's size is randomized ONCE on page load and then locked
-   — swapping/glitching never reshapes a bar or line again. Color
-   palette stays inside the HEAT poster scheme (black/gray + cold
-   night-blue for the bars); only the hairlines are ever red.
+   The 3 red hairlines are pulled out of the slot grid entirely and
+   float freely (position: absolute) across the full width of the
+   strip. While the user's mouse is moving anywhere on the page, each
+   line jumps to a fresh random x position every ~340ms — checked
+   against every bar's actual current position so it never lands on
+   top of one. The instant the mouse stops moving, the lines freeze
+   exactly where they are.
 
-   Hover ("piano" mode): moving the pointer anywhere over a slot's
-   column — not just directly over the (often narrower) shape inside
-   it — immediately hides every other shape completely, instantly,
-   like releasing every other piano key, while the hovered shape
-   keeps glitching (bars) or stays in its current spot (lines).
-   Moving off the zone brings everyone back.
+   Each shape's size is randomized ONCE on page load and then locked.
+   Color palette stays inside the HEAT poster scheme (black/gray +
+   cold night-blue for the bars); only the hairlines are ever red.
+
+   Hover ("piano" mode): moving the pointer anywhere over a bar's
+   slot column, or directly over a line itself, immediately hides
+   every other shape completely, like releasing every other piano
+   key, while the hovered one stays visible. Moving off brings
+   everyone back.
    ================================================================== */
 
 (() => {
   // ---- SIMPLE TUNING PARAMETERS ----------------------------------
-  const GLITCH_SPEED = 3;
-  const GLITCH_RANDOMNESS = 8;
+  const GLITCH_SPEED = 2;
+  const GLITCH_RANDOMNESS = 4;
 
   const BASE_GLITCH_SPEED_S = 0.75;
   const BASE_PAUSE_MIN_MS = 450;
@@ -63,13 +68,13 @@
   const LINE_MIN_HEIGHT_PCT = 68;
   const LINE_MAX_HEIGHT_PCT = 96;
 
-  // ---- Mouse-driven line movement ---------------------------------
-  // While the mouse is moving anywhere on the page, each red line
-  // randomly jitters along the x-axis. The instant the mouse stops
-  // moving, every line freezes exactly where it is.
-  const LINE_MOVE_RANGE_PX = 42;   // how far a line can drift from its slot center
-  const LINE_JITTER_MS = 90;       // how often a moving line picks a new random x
-  const LINE_STOP_DELAY_MS = 140;  // how long the mouse must sit still to count as "stopped"
+  // ---- Free-roaming line movement ---------------------------------
+    const LINE_RETARGET_MIN_MS = 180;  // fastest a moving line can jump to a new spot
+  const LINE_RETARGET_MAX_MS = 420;  // slowest a moving line can jump to a new spot
+  const LINE_STOP_DELAY_MS = 140;   // how long the mouse must sit still to count as "stopped"
+  const LINE_EDGE_MARGIN_PX = 10;   // keep lines a bit clear of the zone's outer edges
+  const LINE_BAR_CLEARANCE_PX = 8;  // minimum gap kept between a line and any bar
+  const LINE_LINE_CLEARANCE_PX = 18; // minimum gap kept between red lines
 
   const SOLO_TICK_MS = 220 / GLITCH_SPEED;
   const SWAP_FADE_MS = 200 / GLITCH_SPEED;
@@ -79,6 +84,7 @@
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const barZone = document.getElementById('barZone');
+  const barsEl = document.getElementById('bars');
   const shapeEls = Array.from(document.querySelectorAll('.shape'));
 
   const slotEls = {};
@@ -101,6 +107,7 @@
   state.forEach(s => { byId[s.id] = s; });
 
   const lineShapes = state.filter(s => s.type === 'line');
+  const barShapes = state.filter(s => s.type === 'bar');
 
   let hoveredId = null;
 
@@ -144,8 +151,7 @@
       scheduleShape(shape);
       return;
     }
-    // Bars only ever swap with other bars now — lines have their own
-    // mouse-driven movement and never relocate to a different slot.
+    // Bars only ever swap with other bars.
     const candidates = state.filter(s => s.id !== shape.id && s.type === shape.type && !s.moving && !s.frozen);
     if (candidates.length === 0) {
       scheduleShape(shape);
@@ -198,7 +204,7 @@
 
   function startSolo(shape) {
     stopSolo(shape);
-    if (shape.type !== 'bar') return; // lines have nothing to re-glitch
+    if (shape.type !== 'bar') return;
     if (reduceMotion) {
       reglitchLook(shape);
       return;
@@ -263,6 +269,12 @@
   }
 
   function handlePointerMove(e) {
+    // Lines float freely now, so check for a direct hover on one first.
+    const lineEl = e.target.closest && e.target.closest('.line');
+    if (lineEl) {
+      setHover(lineEl);
+      return;
+    }
     const slotEl = e.target.closest && e.target.closest('.slot');
     if (slotEl) {
       const shapeEl = slotEl.querySelector('.shape');
@@ -275,45 +287,105 @@
   barZone.addEventListener('pointermove', handlePointerMove);
   barZone.addEventListener('pointerleave', clearHover);
 
-  // ---- Line jitter: random x movement while the mouse moves, frozen
-  // the instant it stops -------------------------------------------
-  let lineJitterInterval = null;
-  let lineStopTimer = null;
+  // ---- Free-roaming lines: jump to a new random x (clear of every
+  // bar's current position) every tick while the mouse is moving,
+  // freeze in place the instant it stops -----------------------------
+  function getZoneWidth() {
+    return barsEl.getBoundingClientRect().width;
+  }
 
-  function jitterLines() {
-    lineShapes.forEach(line => {
-      if (line.frozen) return; // hidden by hover-piano mode — leave it be
-      const offset = (Math.random() * 2 - 1) * LINE_MOVE_RANGE_PX;
-      line.el.style.transform = `translateX(${offset.toFixed(1)}px)`;
+  function getBarRects() {
+    const zoneLeft = barsEl.getBoundingClientRect().left;
+    return barShapes.map(s => {
+      const r = s.el.getBoundingClientRect();
+      return { left: r.left - zoneLeft, right: r.right - zoneLeft };
     });
   }
 
-  function startLineJitter() {
-    if (lineJitterInterval) return;
-    jitterLines();
-    lineJitterInterval = setInterval(jitterLines, LINE_JITTER_MS);
+  function pickFreeX(zoneWidth, barRects, lineXs) {
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const x = LINE_EDGE_MARGIN_PX + Math.random() * (zoneWidth - LINE_EDGE_MARGIN_PX * 2);
+      const blocked = barRects.some(r => x > r.left - LINE_BAR_CLEARANCE_PX && x < r.right + LINE_BAR_CLEARANCE_PX);
+      const tooCloseToLine = lineXs.some(lineX => Math.abs(x - lineX) < LINE_LINE_CLEARANCE_PX);
+      if (!blocked && !tooCloseToLine) return x;
+    }
+
+    // Choose the best available point if random sampling misses a gap.
+    // The line-to-line distance is scored first so red lines never stack.
+    let bestX = LINE_EDGE_MARGIN_PX;
+    let bestScore = -Infinity;
+    for (let index = 0; index <= 100; index++) {
+      const x = LINE_EDGE_MARGIN_PX + (index / 100) * (zoneWidth - LINE_EDGE_MARGIN_PX * 2);
+      const nearestLine = lineXs.length
+        ? Math.min(...lineXs.map(lineX => Math.abs(x - lineX)))
+        : Infinity;
+      const barPenalty = barRects.some(r => x > r.left - LINE_BAR_CLEARANCE_PX && x < r.right + LINE_BAR_CLEARANCE_PX)
+        ? zoneWidth
+        : 0;
+      const score = nearestLine - barPenalty;
+      if (score > bestScore) {
+        bestScore = score;
+        bestX = x;
+      }
+    }
+    return bestX;
   }
 
-  function stopLineJitter() {
-    clearInterval(lineJitterInterval);
-    lineJitterInterval = null;
-    // Leaving each line's transform untouched here is what "freezes"
-    // it in place once the mouse stops moving.
+  function retargetLines() {
+    const zoneWidth = getZoneWidth();
+    const barRects = getBarRects();
+    const lineXs = [];
+    lineShapes.forEach(line => {
+      if (line.frozen) return;
+      const x = pickFreeX(zoneWidth, barRects, lineXs);
+      line.el.style.left = x + 'px';
+      lineXs.push(x);
+    });
+  }
+
+   let lineRetargetTimer = null;
+  let lineStopTimer = null;
+  let lineMovementActive = false;
+
+  function scheduleNextRetarget() {
+    const delay = LINE_RETARGET_MIN_MS + Math.random() * (LINE_RETARGET_MAX_MS - LINE_RETARGET_MIN_MS);
+    lineRetargetTimer = setTimeout(() => {
+      retargetLines();
+      if (lineMovementActive) scheduleNextRetarget();
+    }, delay);
+  }
+
+  function startLineMovement() {
+    if (lineMovementActive) return;
+    lineMovementActive = true;
+    retargetLines();
+    scheduleNextRetarget();
+  }
+
+  function stopLineMovement() {
+    lineMovementActive = false;
+    clearTimeout(lineRetargetTimer);
+    lineRetargetTimer = null;
+    // Leaving "left" untouched here is what freezes lines in place.
   }
 
   function handleMouseActivity() {
     if (reduceMotion || lineShapes.length === 0) return;
-    startLineJitter();
+    startLineMovement();
     clearTimeout(lineStopTimer);
-    lineStopTimer = setTimeout(stopLineJitter, LINE_STOP_DELAY_MS);
+    lineStopTimer = setTimeout(stopLineMovement, LINE_STOP_DELAY_MS);
   }
 
   window.addEventListener('pointermove', handleMouseActivity);
 
-  // seed each shape's fixed size/tint once; only bars join the
-  // ambient swap loop — lines are driven by mouse movement instead.
-  state.forEach(s => {
-    seedLook(s);
-    if (s.type === 'bar') scheduleShape(s);
-  });
+  // seed each shape's fixed size/tint once
+  state.forEach(s => seedLook(s));
+
+  // pull the lines out of the slot grid so they can roam the full
+  // width of the zone instead of being boxed into one slot column
+  lineShapes.forEach(line => barsEl.appendChild(line.el));
+  retargetLines(); // give them a valid starting spot, clear of every bar
+
+  // only bars join the ambient swap loop — lines are mouse-driven
+  barShapes.forEach(s => scheduleShape(s));
 })();

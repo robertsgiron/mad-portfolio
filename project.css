@@ -325,7 +325,7 @@ html, body {
 @media (max-width: 760px) {
   .about-header {
     flex-direction: column;
-    padding: 24px 24px 0;
+    padding: 64px 24px 0;
   }
   .about-media {
     width: 100%;
@@ -655,15 +655,4 @@ html, body {
   object-fit: contain;
   aspect-ratio: 1 / 1; 
   opacity: 0.6;
-}
-.site-copyright {
-  position: static;
-  margin: 16px 0 20px 16px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.7rem;
-  color: #000000;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  pointer-events: none;
 }
