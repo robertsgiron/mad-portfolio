@@ -1,41 +1,34 @@
 /* ==================================================================
-   Bar zone glitch system — v3 (fixed-size holographic bars + red
-   lines, per-slot "piano key" hover, tunable speed/randomness)
+   Bar zone glitch system — v4 (fixed-size holographic bars + red
+   lines with mouse-driven movement, per-slot "piano key" hover,
+   tunable speed/randomness)
    ------------------------------------------------------------------
    The top strip is divided into 13 fixed, non-overlapping "slots".
-   Every slot holds one "shape" — either a holographic bar (10 of
-   them) or a solid-red hairline (3 of them). A shape never moves
-   freely in pixel-space, it only ever swaps places with another
-   shape, so two shapes can mathematically never occupy the same
-   space at the same time.
+   10 slots hold holographic bars, which keep swapping places at
+   random on a timer (the original "glitch" behavior). The other 3
+   slots hold red hairlines, which no longer swap or glitch — instead
+   they jitter randomly along the x-axis while the user's mouse is
+   moving, and freeze in whatever position they're in the instant the
+   mouse stops moving.
 
    Each shape's size is randomized ONCE on page load and then locked
-   — swapping/glitching never reshapes a bar or line again, it only
-   moves it to a different slot and (for bars) re-tints its color.
-   Color palette stays inside the HEAT poster scheme (black/gray +
-   cold night-blue for the bars); only the hairlines are ever red.
+   — swapping/glitching never reshapes a bar or line again. Color
+   palette stays inside the HEAT poster scheme (black/gray + cold
+   night-blue for the bars); only the hairlines are ever red.
 
    Hover ("piano" mode): moving the pointer anywhere over a slot's
    column — not just directly over the (often narrower) shape inside
    it — immediately hides every other shape completely, instantly,
    like releasing every other piano key, while the hovered shape
-   keeps glitching in place. Moving off the zone brings everyone
-   back. No click/drag involved, pointer position alone drives it.
+   keeps glitching (bars) or stays in its current spot (lines).
+   Moving off the zone brings everyone back.
    ================================================================== */
 
 (() => {
   // ---- SIMPLE TUNING PARAMETERS ----------------------------------
-  // Turn these two numbers up or down to change the whole feel of
-  // the glitch. Nothing else in this file needs to change.
-  //   GLITCH_SPEED       — 1 = baseline pace; higher = snappier
-  //                         transitions, faster flicker/re-glitch.
-  //   GLITCH_RANDOMNESS   — 1 = baseline pace; higher = shapes swap
-  //                         places more often (shorter random pause
-  //                         between swaps).
   const GLITCH_SPEED = 3;
   const GLITCH_RANDOMNESS = 8;
 
-  // Base pace this multiplies against — do not need to touch these.
   const BASE_GLITCH_SPEED_S = 0.75;
   const BASE_PAUSE_MIN_MS = 450;
   const BASE_PAUSE_MAX_MS = 1100;
@@ -45,9 +38,6 @@
     (BASE_GLITCH_SPEED_S / GLITCH_SPEED) + 's'
   );
 
-  // Tint palette for the holographic bars — the HEAT poster's black/
-  // gray range plus the film's cold night-blue grade. No neon, no
-  // red — red stays reserved for the hairlines only.
   const BAR_TINTS = [
     '10, 10, 10',
     '28, 28, 28',
@@ -73,9 +63,17 @@
   const LINE_MIN_HEIGHT_PCT = 68;
   const LINE_MAX_HEIGHT_PCT = 96;
 
-  const SOLO_TICK_MS = 220 / GLITCH_SPEED;   // how often the hovered shape re-glitches on its own
-  const SWAP_FADE_MS = 200 / GLITCH_SPEED;   // fade-out before a swap relocates the DOM nodes
-  const SWAP_SETTLE_MS = 420 / GLITCH_SPEED; // flicker-in duration after a swap
+  // ---- Mouse-driven line movement ---------------------------------
+  // While the mouse is moving anywhere on the page, each red line
+  // randomly jitters along the x-axis. The instant the mouse stops
+  // moving, every line freezes exactly where it is.
+  const LINE_MOVE_RANGE_PX = 42;   // how far a line can drift from its slot center
+  const LINE_JITTER_MS = 90;       // how often a moving line picks a new random x
+  const LINE_STOP_DELAY_MS = 140;  // how long the mouse must sit still to count as "stopped"
+
+  const SOLO_TICK_MS = 220 / GLITCH_SPEED;
+  const SWAP_FADE_MS = 200 / GLITCH_SPEED;
+  const SWAP_SETTLE_MS = 420 / GLITCH_SPEED;
 
   const reduceMotion = window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -102,6 +100,8 @@
   const byId = {};
   state.forEach(s => { byId[s.id] = s; });
 
+  const lineShapes = state.filter(s => s.type === 'line');
+
   let hoveredId = null;
 
   function randPct(min, max) {
@@ -116,9 +116,6 @@
     return randPct(BASE_PAUSE_MIN_MS / GLITCH_RANDOMNESS, BASE_PAUSE_MAX_MS / GLITCH_RANDOMNESS);
   }
 
-  // Sets a shape's size ONCE, on load. This is the only place height/
-  // width ever get assigned — swapping and glitching after this point
-  // never reshapes a bar or line again, only moves/re-tints it.
   function seedLook(shape) {
     if (shape.type === 'bar') {
       shape.el.style.height = randPct(BAR_MIN_HEIGHT_PCT, BAR_MAX_HEIGHT_PCT) + '%';
@@ -129,10 +126,6 @@
     }
   }
 
-  // Re-glitches a shape's LOOK during a swap or a solo hover tick —
-  // color only for bars, nothing for lines (they're a flat, fixed
-  // red hairline). Size/shape is locked in by seedLook() and never
-  // touched again.
   function reglitchLook(shape) {
     if (shape.type === 'bar') {
       shape.el.style.setProperty('--bar-tint-rgb', randTint());
@@ -151,7 +144,9 @@
       scheduleShape(shape);
       return;
     }
-    const candidates = state.filter(s => s.id !== shape.id && !s.moving && !s.frozen);
+    // Bars only ever swap with other bars now — lines have their own
+    // mouse-driven movement and never relocate to a different slot.
+    const candidates = state.filter(s => s.id !== shape.id && s.type === shape.type && !s.moving && !s.frozen);
     if (candidates.length === 0) {
       scheduleShape(shape);
       return;
@@ -165,8 +160,6 @@
     partner.el.classList.add('glitch-out');
 
     setTimeout(() => {
-      // If either shape got hovered/frozen mid-flight, bail out cleanly
-      // instead of relocating it — freezing always wins over a swap.
       if (shape.frozen || partner.frozen) {
         shape.el.classList.remove('glitch-out');
         partner.el.classList.remove('glitch-out');
@@ -203,11 +196,9 @@
     }, SWAP_FADE_MS);
   }
 
-  // ---- Solo glitch loop for whichever shape is currently hovered ----
-  // Keeps that one shape continuously re-glitching in place (no
-  // partner needed) for as long as the pointer stays over its slot.
   function startSolo(shape) {
     stopSolo(shape);
+    if (shape.type !== 'bar') return; // lines have nothing to re-glitch
     if (reduceMotion) {
       reglitchLook(shape);
       return;
@@ -215,7 +206,7 @@
     shape.soloInterval = setInterval(() => {
       reglitchLook(shape);
       shape.el.classList.remove('glitch-flicker');
-      void shape.el.offsetWidth; // force reflow so the flicker animation restarts
+      void shape.el.offsetWidth;
       shape.el.classList.add('glitch-flicker');
     }, SOLO_TICK_MS);
   }
@@ -227,9 +218,6 @@
     }
   }
 
-  // Freezing now means fully hiding — every other shape disappears
-  // completely (opacity: 0 via .frozen in style.css) the instant one
-  // slot is hovered, like releasing every other key on a piano.
   function freezeAllExcept(activeId) {
     state.forEach(s => {
       if (s.id === activeId) return;
@@ -244,7 +232,7 @@
     state.forEach(s => {
       s.frozen = false;
       s.el.classList.remove('frozen');
-      scheduleShape(s);
+      if (s.type === 'bar') scheduleShape(s);
     });
   }
 
@@ -274,10 +262,6 @@
     startSolo(active);
   }
 
-  // Hovering ANYWHERE inside a slot's column — not just directly over
-  // the (often narrower) shape drawn inside it — activates that
-  // slot's shape, the same way pressing anywhere on a piano key
-  // sounds that key regardless of exactly where your finger lands.
   function handlePointerMove(e) {
     const slotEl = e.target.closest && e.target.closest('.slot');
     if (slotEl) {
@@ -288,16 +272,48 @@
     }
   }
 
-  // Pointer-driven only — deliberately no drag/click handling, just
-  // gliding the cursor across the zone activates whichever slot is
-  // directly underneath it.
   barZone.addEventListener('pointermove', handlePointerMove);
   barZone.addEventListener('pointerleave', clearHover);
 
-  // seed each shape's fixed size/tint once, then start the ambient
-  // swap loop
+  // ---- Line jitter: random x movement while the mouse moves, frozen
+  // the instant it stops -------------------------------------------
+  let lineJitterInterval = null;
+  let lineStopTimer = null;
+
+  function jitterLines() {
+    lineShapes.forEach(line => {
+      if (line.frozen) return; // hidden by hover-piano mode — leave it be
+      const offset = (Math.random() * 2 - 1) * LINE_MOVE_RANGE_PX;
+      line.el.style.transform = `translateX(${offset.toFixed(1)}px)`;
+    });
+  }
+
+  function startLineJitter() {
+    if (lineJitterInterval) return;
+    jitterLines();
+    lineJitterInterval = setInterval(jitterLines, LINE_JITTER_MS);
+  }
+
+  function stopLineJitter() {
+    clearInterval(lineJitterInterval);
+    lineJitterInterval = null;
+    // Leaving each line's transform untouched here is what "freezes"
+    // it in place once the mouse stops moving.
+  }
+
+  function handleMouseActivity() {
+    if (reduceMotion || lineShapes.length === 0) return;
+    startLineJitter();
+    clearTimeout(lineStopTimer);
+    lineStopTimer = setTimeout(stopLineJitter, LINE_STOP_DELAY_MS);
+  }
+
+  window.addEventListener('pointermove', handleMouseActivity);
+
+  // seed each shape's fixed size/tint once; only bars join the
+  // ambient swap loop — lines are driven by mouse movement instead.
   state.forEach(s => {
     seedLook(s);
-    scheduleShape(s);
+    if (s.type === 'bar') scheduleShape(s);
   });
 })();
