@@ -61,20 +61,30 @@ body {
   inset: 0;
   display: flex;
   align-items: flex-start;
-  justify-content: space-evenly;
-  padding: 0 3vw;
+  justify-content: space-between;
+  padding: 0;
 }
 
 .slot {
   position: relative;
   height: 100%;
-  width: 7%;
+  width: auto;
+  flex: 1 1 0;
   display: flex;
   justify-content: center;
 }
 
+.slot::before {
+  content: '';
+  position: absolute;
+  inset: 0 -10px;
+  z-index: 0;
+}
+
 /* ---- Shared base for anything that lives in a slot ---- */
 .shape {
+  position: relative;
+  z-index: 1;
   transform-origin: top center;
 }
 
@@ -92,6 +102,8 @@ body {
   height: 92%;
   background: var(--heat-red);
   opacity: 1;
+  animation: flicker 0.21s steps(2, jump-none) infinite;
+  transform: translateX(-50%);
   filter: drop-shadow(0 0 1px rgba(200, 20, 20, 0.5));
   transition:
     height var(--glitch-speed) cubic-bezier(.2,.8,.2,1),
@@ -110,17 +122,23 @@ body {
    ============================================================ */
 .bar {
   --bar-tint-rgb: 51, 51, 51;
+  --bar-tint-alpha: 0.22;
   position: relative;
-  width: 65%;
-  background: rgb(var(--bar-tint-rgb));
-  opacity: 0.15;
+  width: 100%;
+  background: rgba(var(--bar-tint-rgb), var(--bar-tint-alpha));
+  border: 0;
   transition:
     height var(--glitch-speed) cubic-bezier(.2,.8,.2,1),
     width var(--glitch-speed) cubic-bezier(.2,.8,.2,1),
     background 0.3s ease,
-    opacity 0.3s ease,
+    border-color 0.3s ease,
     transform 0.3s cubic-bezier(.2,.8,.2,1);
   will-change: height, width, transform, opacity, background-color;
+}
+
+.bar.active-solo {
+  background: rgba(var(--bar-tint-rgb), calc(var(--bar-tint-alpha) + 0.3));
+  border-color: rgba(var(--bar-tint-rgb), calc(var(--bar-tint-alpha) + 0.5));
 }
 
 .bar.glitch-out {
@@ -152,6 +170,7 @@ body {
    ============================================================ */
 .shape.frozen {
   transition: none !important;
+  animation: none !important;
   opacity: 0;
   pointer-events: none;
 }
@@ -239,8 +258,9 @@ body {
 }
 
 .track {
+  font-family: 'Eurostile Bold Extended', 'Eurostile Extended', sans-serif;
   font-size: clamp(0.95rem, 2.1vh, 1.5rem);
-  font-weight: 500;
+  font-weight: 700;
   color: var(--ink);
   text-decoration: none;
   letter-spacing: 0.2px;
@@ -259,11 +279,12 @@ body {
 
 }
 /* ============================================================
-   SITE-WIDE COPYRIGHT MARK — bottom-left on every page
+  SITE-WIDE COPYRIGHT MARK — bottom-right on every page
    ============================================================ */
 .site-copyright {
   position: fixed;
-  left: 16px;
+  left: auto;
+  right: 16px;
   bottom: 12px;
   z-index: 10;
   display: flex;

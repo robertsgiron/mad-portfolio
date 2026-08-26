@@ -3,14 +3,14 @@
    lines that roam freely across the whole strip, per-slot "piano
    key" hover, tunable speed/randomness)
    ------------------------------------------------------------------
-   The top strip is divided into 13 fixed, non-overlapping "slots".
-   10 slots hold holographic bars, which keep swapping places with
+  The top strip is divided into 22 fixed, non-overlapping "slots".
+  18 slots hold holographic bars, which keep swapping places with
    each other at random on a timer (the original "glitch" behavior).
    Bars only ever trade among themselves, so they permanently occupy
-   the same 10 slot columns — the other 3 slot columns are always
+  the same 18 slot columns — the other 4 slot columns are always
    bar-free space.
 
-   The 3 red hairlines are pulled out of the slot grid entirely and
+  The 4 red hairlines are pulled out of the slot grid entirely and
    float freely (position: absolute) across the full width of the
    strip. While the user's mouse is moving anywhere on the page, each
    line jumps to a fresh random x position every ~340ms — checked
@@ -31,8 +31,8 @@
 
 (() => {
   // ---- SIMPLE TUNING PARAMETERS ----------------------------------
-  const GLITCH_SPEED = 2;
-  const GLITCH_RANDOMNESS = 4;
+  const GLITCH_SPEED = 1;
+  const GLITCH_RANDOMNESS = 2;
 
   const BASE_GLITCH_SPEED_S = 0.75;
   const BASE_PAUSE_MIN_MS = 450;
@@ -43,21 +43,24 @@
     (BASE_GLITCH_SPEED_S / GLITCH_SPEED) + 's'
   );
 
-  const BAR_TINTS = [
-    '10, 10, 10',
-    '28, 28, 28',
-    '51, 51, 51',
-    '77, 77, 77',
-    '112, 112, 112',
-    '143, 143, 143',
-    '173, 173, 173',
-    '13, 27, 46',
-    '22, 41, 74',
-    '31, 58, 99',
-    '44, 82, 130',
-    '61, 110, 165',
-    '107, 147, 189',
-    '147, 179, 211'
+    const BAR_TINTS = [
+    { rgb: '10, 10, 10',    alpha: 0.55 }, // near-black
+    { rgb: '28, 28, 28',    alpha: 0.5  },
+    { rgb: '51, 51, 51',    alpha: 0.4  },
+    { rgb: '77, 77, 77',    alpha: 0.32 },
+    { rgb: '112, 112, 112', alpha: 0.26 },
+    { rgb: '143, 143, 143', alpha: 0.22 },
+    { rgb: '173, 173, 173', alpha: 0.2  },
+    { rgb: '6, 10, 26',     alpha: 0.6  }, // deepest navy-black shadow
+    { rgb: '18, 24, 48',    alpha: 0.54 },
+    { rgb: '34, 40, 66',    alpha: 0.46 },
+    { rgb: '58, 65, 94',    alpha: 0.36 },
+    { rgb: '86, 93, 124',   alpha: 0.28 }, // the poster's core mid-blue
+    { rgb: '120, 127, 158', alpha: 0.24 },
+    { rgb: '160, 167, 197', alpha: 0.2  },
+    { rgb: '210, 216, 240', alpha: 0.16 }, // pale periwinkle, the lightest real blue in the image
+    { rgb: '35, 38, 44',    alpha: 0.5  }, // gunmetal — the rifle steel
+    { rgb: '24, 20, 18',    alpha: 0.58 }, // warm near-black — the suits
   ];
 
   const BAR_MIN_HEIGHT_PCT = 20;
@@ -69,12 +72,12 @@
   const LINE_MAX_HEIGHT_PCT = 96;
 
   // ---- Free-roaming line movement ---------------------------------
-    const LINE_RETARGET_MIN_MS = 180;  // fastest a moving line can jump to a new spot
-  const LINE_RETARGET_MAX_MS = 420;  // slowest a moving line can jump to a new spot
-  const LINE_STOP_DELAY_MS = 140;   // how long the mouse must sit still to count as "stopped"
-  const LINE_EDGE_MARGIN_PX = 10;   // keep lines a bit clear of the zone's outer edges
-  const LINE_BAR_CLEARANCE_PX = 8;  // minimum gap kept between a line and any bar
-  const LINE_LINE_CLEARANCE_PX = 18; // minimum gap kept between red lines
+    const LINE_RETARGET_MIN_MS = 280;  // fastest a moving line can jump to a new spot
+  const LINE_RETARGET_MAX_MS = 520;  // slowest a moving line can jump to a new spot
+    const LINE_STOP_DELAY_MS = 180;   // stop changing position after the pointer rests
+    const LINE_BAR_CLEARANCE_PX = 8;  // minimum gap kept between a line and any bar
+    const LINE_LINE_CLEARANCE_PX = 18; // minimum gap kept between red lines
+  const LINE_HALF_WIDTH_PX = 1;
 
   const SOLO_TICK_MS = 220 / GLITCH_SPEED;
   const SWAP_FADE_MS = 200 / GLITCH_SPEED;
@@ -123,11 +126,13 @@
     return randPct(BASE_PAUSE_MIN_MS / GLITCH_RANDOMNESS, BASE_PAUSE_MAX_MS / GLITCH_RANDOMNESS);
   }
 
-  function seedLook(shape) {
+    function seedLook(shape) {
     if (shape.type === 'bar') {
       shape.el.style.height = randPct(BAR_MIN_HEIGHT_PCT, BAR_MAX_HEIGHT_PCT) + '%';
       shape.el.style.width = randPct(BAR_MIN_WIDTH_PCT, BAR_MAX_WIDTH_PCT) + '%';
-      shape.el.style.setProperty('--bar-tint-rgb', randTint());
+      const tint = randTint();
+      shape.el.style.setProperty('--bar-tint-rgb', tint.rgb);
+      shape.el.style.setProperty('--bar-tint-alpha', tint.alpha);
     } else {
       shape.el.style.height = randPct(LINE_MIN_HEIGHT_PCT, LINE_MAX_HEIGHT_PCT) + '%';
     }
@@ -135,7 +140,9 @@
 
   function reglitchLook(shape) {
     if (shape.type === 'bar') {
-      shape.el.style.setProperty('--bar-tint-rgb', randTint());
+      const tint = randTint();
+      shape.el.style.setProperty('--bar-tint-rgb', tint.rgb);
+      shape.el.style.setProperty('--bar-tint-alpha', tint.alpha);
     }
   }
 
@@ -237,7 +244,7 @@
   function unfreezeAll() {
     state.forEach(s => {
       s.frozen = false;
-      s.el.classList.remove('frozen');
+      s.el.classList.remove('frozen', 'glitch-out');
       if (s.type === 'bar') scheduleShape(s);
     });
   }
@@ -263,89 +270,138 @@
 
     hoveredId = id;
     const active = byId[id];
+    active.frozen = false;
+    active.el.classList.remove('frozen', 'glitch-out');
     active.el.classList.add('active-solo');
     freezeAllExcept(id);
     startSolo(active);
   }
 
+  function getBarAtPoint(clientX, clientY) {
+    return barShapes.find(bar => {
+      const rect = bar.el.getBoundingClientRect();
+      const hitMargin = 10;
+      return clientX >= rect.left - hitMargin &&
+        clientX <= rect.right + hitMargin &&
+        clientY >= rect.top - hitMargin &&
+        clientY <= rect.bottom + hitMargin;
+    });
+  }
+
   function handlePointerMove(e) {
+    const zoneRect = barZone.getBoundingClientRect();
+    if (e.clientY < zoneRect.top || e.clientY > zoneRect.bottom) {
+      clearHover();
+      return;
+    }
+
     // Lines float freely now, so check for a direct hover on one first.
     const lineEl = e.target.closest && e.target.closest('.line');
     if (lineEl) {
       setHover(lineEl);
       return;
     }
-    const slotEl = e.target.closest && e.target.closest('.slot');
-    if (slotEl) {
-      const shapeEl = slotEl.querySelector('.shape');
-      if (shapeEl) setHover(shapeEl);
+    const bar = getBarAtPoint(e.clientX, e.clientY);
+    if (bar) {
+      setHover(bar.el);
     } else {
       clearHover();
     }
   }
 
-  barZone.addEventListener('pointermove', handlePointerMove);
+  window.addEventListener('pointermove', handlePointerMove);
   barZone.addEventListener('pointerleave', clearHover);
+  barZone.addEventListener('click', e => {
+    const shapeEl = e.target.closest && e.target.closest('.bar');
+    if (shapeEl) setHover(shapeEl);
+  });
 
-  // ---- Free-roaming lines: jump to a new random x (clear of every
-  // bar's current position) every tick while the mouse is moving,
-  // freeze in place the instant it stops -----------------------------
-  function getZoneWidth() {
-    return barsEl.getBoundingClientRect().width;
+  // ---- Lines move among the dedicated bar-free slots while the mouse moves.
+  function getEmptySlotCenters() {
+    const zoneLeft = barsEl.getBoundingClientRect().left;
+    return Array.from(document.querySelectorAll('.slot'))
+      .filter(slot => !slot.querySelector('.bar'))
+      .map(slot => {
+        const rect = slot.getBoundingClientRect();
+        return rect.left + rect.width / 2 - zoneLeft;
+      });
   }
 
   function getBarRects() {
     const zoneLeft = barsEl.getBoundingClientRect().left;
-    return barShapes.map(s => {
-      const r = s.el.getBoundingClientRect();
-      return { left: r.left - zoneLeft, right: r.right - zoneLeft };
-    });
+    return barShapes
+      .map(shape => {
+        const rect = shape.el.getBoundingClientRect();
+        return { left: rect.left - zoneLeft, right: rect.right - zoneLeft };
+      })
+      .sort((a, b) => a.left - b.left);
   }
 
-  function pickFreeX(zoneWidth, barRects, lineXs) {
-    for (let attempt = 0; attempt < 60; attempt++) {
-      const x = LINE_EDGE_MARGIN_PX + Math.random() * (zoneWidth - LINE_EDGE_MARGIN_PX * 2);
-      const blocked = barRects.some(r => x > r.left - LINE_BAR_CLEARANCE_PX && x < r.right + LINE_BAR_CLEARANCE_PX);
-      const tooCloseToLine = lineXs.some(lineX => Math.abs(x - lineX) < LINE_LINE_CLEARANCE_PX);
-      if (!blocked && !tooCloseToLine) return x;
+  function shuffle(values) {
+    for (let index = values.length - 1; index > 0; index--) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [values[index], values[swapIndex]] = [values[swapIndex], values[index]];
     }
+    return values;
+  }
 
-    // Choose the best available point if random sampling misses a gap.
-    // The line-to-line distance is scored first so red lines never stack.
-    let bestX = LINE_EDGE_MARGIN_PX;
-    let bestScore = -Infinity;
-    for (let index = 0; index <= 100; index++) {
-      const x = LINE_EDGE_MARGIN_PX + (index / 100) * (zoneWidth - LINE_EDGE_MARGIN_PX * 2);
-      const nearestLine = lineXs.length
-        ? Math.min(...lineXs.map(lineX => Math.abs(x - lineX)))
-        : Infinity;
-      const barPenalty = barRects.some(r => x > r.left - LINE_BAR_CLEARANCE_PX && x < r.right + LINE_BAR_CLEARANCE_PX)
-        ? zoneWidth
-        : 0;
-      const score = nearestLine - barPenalty;
-      if (score > bestScore) {
-        bestScore = score;
-        bestX = x;
+  function selectSeparatedCenters(candidateCenters, barRects) {
+    const safeCandidates = candidateCenters.filter(center =>
+      barRects.every(rect =>
+        center <= rect.left - LINE_BAR_CLEARANCE_PX - LINE_HALF_WIDTH_PX ||
+        center >= rect.right + LINE_BAR_CLEARANCE_PX + LINE_HALF_WIDTH_PX
+      )
+    );
+
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const selectedCenters = [];
+      shuffle(safeCandidates.slice()).forEach(center => {
+        if (selectedCenters.every(existing => Math.abs(center - existing) >= LINE_LINE_CLEARANCE_PX)) {
+          selectedCenters.push(center);
+        }
+      });
+      if (selectedCenters.length >= lineShapes.length) {
+        return selectedCenters.slice(0, lineShapes.length);
       }
     }
-    return bestX;
+    return [];
   }
 
   function retargetLines() {
-    const zoneWidth = getZoneWidth();
     const barRects = getBarRects();
-    const lineXs = [];
-    lineShapes.forEach(line => {
-      if (line.frozen) return;
-      const x = pickFreeX(zoneWidth, barRects, lineXs);
-      line.el.style.left = x + 'px';
-      lineXs.push(x);
+    const availableCenters = [];
+    for (let index = 0; index < barRects.length - 1; index++) {
+      const gapStart = barRects[index].right + LINE_BAR_CLEARANCE_PX + LINE_HALF_WIDTH_PX;
+      const gapEnd = barRects[index + 1].left - LINE_BAR_CLEARANCE_PX - LINE_HALF_WIDTH_PX;
+      if (gapEnd > gapStart) {
+        availableCenters.push((gapStart + gapEnd) / 2);
+      }
+    }
+
+    let centers = selectSeparatedCenters(availableCenters, barRects);
+    if (centers.length < lineShapes.length) {
+      centers = selectSeparatedCenters(getEmptySlotCenters(), barRects);
+    }
+    const previousCenters = lineShapes.map(line => line.el.style.left);
+    if (centers.length === lineShapes.length && centers.every((center, index) => previousCenters[index] === center + 'px')) {
+      const alternateCenters = selectSeparatedCenters(availableCenters, barRects);
+      if (alternateCenters.length === lineShapes.length) {
+        centers = alternateCenters;
+      }
+    }
+
+    lineShapes.forEach((line, index) => {
+      if (line.frozen || centers.length <= index) return;
+      line.el.style.left = centers[index] + 'px';
     });
   }
+
+  window.addEventListener('resize', retargetLines);
 
    let lineRetargetTimer = null;
   let lineStopTimer = null;
   let lineMovementActive = false;
+  let lastPointerX = null;
 
   function scheduleNextRetarget() {
     const delay = LINE_RETARGET_MIN_MS + Math.random() * (LINE_RETARGET_MAX_MS - LINE_RETARGET_MIN_MS);
@@ -366,11 +422,12 @@
     lineMovementActive = false;
     clearTimeout(lineRetargetTimer);
     lineRetargetTimer = null;
-    // Leaving "left" untouched here is what freezes lines in place.
   }
 
-  function handleMouseActivity() {
+  function handleMouseActivity(e) {
     if (reduceMotion || lineShapes.length === 0) return;
+    if (lastPointerX !== null && e.clientX === lastPointerX) return;
+    lastPointerX = e.clientX;
     startLineMovement();
     clearTimeout(lineStopTimer);
     lineStopTimer = setTimeout(stopLineMovement, LINE_STOP_DELAY_MS);
@@ -384,7 +441,7 @@
   // pull the lines out of the slot grid so they can roam the full
   // width of the zone instead of being boxed into one slot column
   lineShapes.forEach(line => barsEl.appendChild(line.el));
-  retargetLines(); // give them a valid starting spot, clear of every bar
+  retargetLines();
 
   // only bars join the ambient swap loop — lines are mouse-driven
   barShapes.forEach(s => scheduleShape(s));

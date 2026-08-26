@@ -169,6 +169,47 @@ html, body {
   color: #333333;
 }
 
+.la-project {
+  padding-top: 9vh;
+  padding-bottom: 3vh;
+}
+
+.la-secondary-frame,
+.la-screenshot {
+  height: clamp(140px, 22vh, 260px);
+}
+
+.la-secondary-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 2vw;
+  margin-top: 14px;
+}
+
+.la-secondary-row .project-media-secondary,
+.la-secondary-row .la-screenshot {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.la-secondary-row .project-media-secondary {
+  margin-top: 0;
+}
+
+.la-screenshot {
+  display: block;
+  margin-top: 0;
+  width: auto;
+  max-width: 520px;
+  object-fit: cover;
+}
+
+@media (max-width: 700px) {
+  .la-secondary-row {
+    flex-direction: column;
+  }
+}
+
 @media (max-width: 860px) {
   .project {
     flex-direction: column;
@@ -295,7 +336,7 @@ html, body {
   font-style: italic;
   font-size: clamp(0.8rem, 1.6vh, 1.2rem);
   line-height: 1.5;
-  margin: clamp(-10px, -0.8vh, -5px) 0 clamp(24px, 3vh, 34px);
+  margin: clamp(-10px, -0.8vh, -5px) 0 calc(clamp(24px, 3vh, 34px) + 3em);
   max-width: 1400px;
 }
 
@@ -632,11 +673,12 @@ html, body {
 }
 
 /* ============================================================
-   SITE-WIDE COPYRIGHT MARK — bottom-left on every page
+  SITE-WIDE COPYRIGHT MARK — bottom-right on every page
    ============================================================ */
 .site-copyright {
   position: fixed;
-  left: 16px;
+  left: auto;
+  right: 16px;
   bottom: 12px;
   z-index: 10;
   display: flex;
@@ -655,4 +697,14 @@ html, body {
   object-fit: contain;
   aspect-ratio: 1 / 1; 
   opacity: 0.6;
+}
+
+.tree-copyright {
+  position: static;
+  width: fit-content;
+  margin: 16px 16px 20px auto;
+}
+
+.la-copyright {
+  right: 16px;
 }
