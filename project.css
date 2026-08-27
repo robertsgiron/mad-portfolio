@@ -162,7 +162,7 @@ html, body {
 /* Reserved space for the write-up. Empty for now — add copy here
    directly in the HTML (see comment inside project-body below). */
 .project-body {
-  margin-top: 56px;
+  margin-top: calc(56px - 1.7rem);
   max-width: 520px;
   font-size: 1rem;
   line-height: 1.7;
@@ -180,15 +180,17 @@ html, body {
 }
 
 .la-secondary-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: flex-start;
   gap: 2vw;
-  margin-top: 14px;
+  max-width: 1400px;
+  margin: 0 auto 3vh;
+  padding: 0 6vw;
 }
 
 .la-secondary-row .project-media-secondary,
 .la-secondary-row .la-screenshot {
-  flex: 1 1 0;
   min-width: 0;
 }
 
@@ -199,14 +201,15 @@ html, body {
 .la-screenshot {
   display: block;
   margin-top: 0;
-  width: auto;
-  max-width: 520px;
+  width: 100%;
+  max-width: none;
   object-fit: cover;
 }
 
 @media (max-width: 700px) {
   .la-secondary-row {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    padding: 0 7vw;
   }
 }
 
@@ -637,7 +640,7 @@ html, body {
 .audio-grid-section {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 6vw 1vh;
+  padding: 1.7rem 6vw 1vh;
 }
 
 .audio-grid {
