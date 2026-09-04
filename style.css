@@ -343,7 +343,6 @@ body.preview-active .track:not(.preview-current) {
   display: block;
   background: var(--page-bg);
   border: 0;
-  vertical-align: middle;
 }
 
 .bio-caption {
