@@ -16,6 +16,14 @@
    ================================================================== */
 
 (() => {
+  // Touch/mobile devices have no real hover, so a tap would otherwise
+  // fire "mouseenter" (showing the preview) and need a second tap to
+  // actually follow the link. Skip the whole feature there entirely —
+  // every title stays a single, direct tap straight to its page.
+  const canHover = window.matchMedia &&
+    window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (!canHover) return;
+
   const preview = document.getElementById('projectPreview');
   const imageLayer = document.getElementById('previewImageLayer');
   const tracks = document.querySelectorAll('.track[data-preview], .track[data-preview-layer]');

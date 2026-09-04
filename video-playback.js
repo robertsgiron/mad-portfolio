@@ -30,4 +30,13 @@
   document.addEventListener('visibilitychange', resumeVideos);
   document.addEventListener('pointerdown', resumeVideos, { passive: true });
   document.addEventListener('keydown', resumeVideos);
+
+  // Mobile browsers (Safari in particular) often restore a page from the
+  // back/forward cache instead of reloading it when you navigate back —
+  // the DOM comes back exactly as it was, mid-video, but the browser may
+  // have paused the video while it was cached. `pageshow` fires on both
+  // a normal load and a bfcache restore (`event.persisted` tells them
+  // apart); resuming unconditionally here means there's never a gap or
+  // a stray play button waiting on the home page when you return to it.
+  window.addEventListener('pageshow', resumeVideos);
 })();
