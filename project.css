@@ -673,6 +673,10 @@ html, body {
   .audio-grid {
     grid-template-columns: 1fr;
   }
+
+  .site-copyright {
+    display: none !important;
+  }
 }
 
 /* ============================================================

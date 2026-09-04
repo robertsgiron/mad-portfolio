@@ -12,6 +12,32 @@
       Heat-palette (+ blue tones), white bg. All 22 shapes (18 bars + 4 lines) swap
        slots via script.js; hovering a shape freezes every other shape in place and
        lets only the hovered one keep glitching. -->
+  <!-- Full-page faint preview shown behind everything while a project title
+       in the nav below is hovered/focused; toggled by project-preview.js.
+       Three stacked layers (image / looping video / live-site iframe) all
+       stay mounted and ready so switching between them is instant. -->
+  <div class="project-preview" id="projectPreview" aria-hidden="true">
+    <div class="preview-layer preview-layer-image" id="previewImageLayer"></div>
+    <video
+      class="preview-layer preview-layer-video"
+      id="previewTreeVideo"
+      muted
+      loop
+      autoplay
+      playsinline
+      disablepictureinpicture
+      preload="auto">
+      <source src="assets/media/giron_tree_07.MP4" type="video/mp4">
+    </video>
+    <iframe
+      class="preview-layer preview-layer-iframe"
+      id="previewLaIframe"
+      src="https://robertsgiron.github.io/To-Live-and-Die-in-LA/"
+      title="To Live and Die in LA — live site preview"
+      tabindex="-1"
+      aria-hidden="true"></iframe>
+  </div>
+
   <div class="bar-zone" id="barZone">
     <div class="grain" aria-hidden="true"></div>
     <div class="bars" id="bars">
@@ -58,16 +84,17 @@
     <p class="bio-caption">click here for bio</p>
 
     <nav class="track-list" aria-label="Projects">
-      <a class="track" href="tree-of-light.html">Tree of Light</a>
-      <a class="track" href="to-live-and-die-in-la.html">To Live and Die in LA</a>
-      <a class="track" href="metamorphosis.html">Metamorphosis</a>
-      <a class="track" href="goodbye-horses.html">Goodbye Horses</a>
-          <a class="track" href="audioworks.html">Audio Works '24-'26</a>
-      <a class="track" href="mpc-logo.html">Music Production Club</a>
+      <a class="track" href="tree-of-light.html" data-preview-layer="previewTreeVideo">Tree of Light</a>
+      <a class="track" href="to-live-and-die-in-la.html" data-preview-layer="previewLaIframe">To Live and Die in LA</a>
+      <a class="track" href="metamorphosis.html" data-preview="assets/media/giron_metamorphosis_01.JPG">Metamorphosis</a>
+      <a class="track" href="goodbye-horses.html" data-preview="https://img.youtube.com/vi/ieznKdvSUJ4/hqdefault.jpg">Goodbye Horses</a>
+          <a class="track" href="audioworks.html" data-preview="assets/audio works 24'-26'/giron_audio_01.png">Audio Works '24-'26</a>
+      <a class="track" href="mpc-logo.html" data-preview="assets/media/giron_mpc_03.png">Music Production Club</a>
     </nav>
   </main>
   <script src="video-playback.js"></script>
   <script src="script.js"></script>
+  <script src="project-preview.js"></script>
   <div class="site-copyright">
   <img src="assets/copyright-mark.png" alt="Copyright mark">
   <span>Robert Giron 2026</span>
