@@ -27,6 +27,20 @@
 
 * { box-sizing: border-box; }
 
+/* Small, unobtrusive way back to the home screen (matches project.css) */
+.back-link {
+  position: absolute;
+  top: 22px;
+  left: 24px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #8c8c8c;
+  text-decoration: none;
+  z-index: 10;
+}
+
+.back-link:hover { color: var(--ink); }
+
 html, body {
   margin: 0;
   padding: 0;
@@ -312,6 +326,7 @@ body.preview-active .track:not(.preview-current) {
   justify-content: center;
   width: 100%;
   padding: clamp(8px, 2vh, 24px) 5vw clamp(12px, 3vh, 32px);
+  text-align: center;
 }
 
 .video-frame {

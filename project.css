@@ -674,3 +674,109 @@ html, body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   PHOTOGRAPHY — continuous vertical scroll feed (noahpdillon.com-
+   style): every photo in sequence at its own natural aspect ratio,
+   no cropping/lightbox/captions. Each photo is capped well below
+   full page size so it reads as a print sitting on a consistent
+   white page, not a full-bleed wall of images — generous white
+   space (vertical AND side gutters) carries the gallery feel.
+   ============================================================ */
+
+.photo-feed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--page-bg);
+  padding: clamp(64px, 10vh, 96px) 6vw clamp(64px, 10vh, 96px);
+}
+
+.photo-feed img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(620px, 55vw);
+  max-height: 72vh;
+  margin: 0 0 clamp(48px, 8vh, 96px);
+}
+
+.photo-feed img:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   GRAPHIC DESIGN — grid gallery with lightbox-on-click (reuses
+   the shared [data-lightbox] / .lightbox-overlay system above).
+   All 36 pieces are sized to fit one viewport with zero page
+   scroll (same zero-scroll rule as Audio Works) — body.gd-page
+   locks the page to 100vh and the grid fills what's left after
+   the back-link's clearance. Cells are fixed, equal grid tracks
+   (guarantees the no-scroll fit regardless of image content);
+   object-fit: contain inside each cell keeps every piece's own
+   proportions intact — no cropping or stretching — letterboxed
+   on the same white as the page itself, so pieces land at
+   whatever size their own aspect ratio allows rather than all
+   being forced equal.
+   ============================================================ */
+
+body.gd-page {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.gd-grid-section {
+  box-sizing: border-box;
+  height: 100vh;
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: clamp(52px, 8vh, 72px) clamp(10px, 2vw, 28px) clamp(10px, 2vh, 24px);
+  display: flex;
+}
+
+.gd-grid {
+  flex: 1 1 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: clamp(3px, 0.6vw, 8px);
+}
+
+.gd-grid-item {
+  position: relative;
+  overflow: hidden;
+  background: var(--page-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gd-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.gd-grid-item:hover img {
+  transform: scale(1.04);
+}
+
+@media (max-width: 860px) {
+  .gd-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(9, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .gd-grid-section {
+    padding: clamp(44px, 7vh, 60px) 8px 8px;
+  }
+  .gd-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(12, 1fr);
+  }
+}
