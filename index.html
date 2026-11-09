@@ -12,24 +12,6 @@
       Heat-palette (+ blue tones), white bg. All 22 shapes (18 bars + 4 lines) swap
        slots via script.js; hovering a shape freezes every other shape in place and
        lets only the hovered one keep glitching. -->
-  <!-- Full-page faint preview, restricted to just "Undergraduate Works" (its
-       Tree of Light looping video) — the other two sections intentionally
-       have no hover preview. Toggled by project-preview.js. -->
-  <div class="project-preview" id="projectPreview" aria-hidden="true">
-    <div class="preview-layer preview-layer-image" id="previewImageLayer"></div>
-    <video
-      class="preview-layer preview-layer-video"
-      id="previewTreeVideo"
-      muted
-      loop
-      autoplay
-      playsinline
-      disablepictureinpicture
-      preload="auto">
-      <source src="assets/media/giron_tree_07.MP4" type="video/mp4">
-    </video>
-  </div>
-
   <div class="bar-zone" id="barZone">
     <div class="grain" aria-hidden="true"></div>
     <div class="bars" id="bars">
@@ -78,12 +60,11 @@
     <nav class="track-list" aria-label="Sections">
       <a class="track" href="photography.html">Photography</a>
       <a class="track" href="graphic-design.html">Graphic Design</a>
-      <a class="track" href="undergraduate-works.html" data-preview-layer="previewTreeVideo">Undergraduate Works</a>
+      <a class="track" href="undergraduate-works.html">Undergraduate Works</a>
     </nav>
   </main>
   <script src="video-playback.js"></script>
   <script src="script.js"></script>
-  <script src="project-preview.js"></script>
   <div class="site-copyright">
   <img src="assets/copyright-mark.png" alt="Copyright mark">
   <span>Robert Giron 2026</span>

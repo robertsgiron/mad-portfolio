@@ -268,29 +268,37 @@ html, body {
   margin: 0;
 }
 
+/* Plain block (not flex) — every child below is already width:100%,
+   so no flex behavior was doing anything except adding a third
+   level of nested flexbox (header > media > strip), which triggered
+   a WebKit sub-pixel rounding bug that left the strip a few px
+   narrower than the photo above it. */
 .about-media {
   flex: 0 0 auto;
   min-width: 0;
   width: min(28vw, 40vh, 780px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
+/* Fixed aspect-ratio frame so the photo always matches the strip's
+   width exactly, regardless of the source photo's own proportions —
+   swapping in a new photo later never needs a manual pre-crop. */
 .about-photo {
   width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
   display: block;
 }
 
 .about-photo img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
 .about-strip {
   width: 100%;
-  display: flex;
+  display: block;
   margin-top: -1px;
 }
 
@@ -683,6 +691,21 @@ html, body {
    white page, not a full-bleed wall of images — generous white
    space (vertical AND side gutters) carries the gallery feel.
    ============================================================ */
+
+/* Mirrors .back-link's top offset so it sits in the same header
+   band, just on the opposite corner. */
+.gear-caption {
+  position: absolute;
+  top: 22px;
+  right: 24px;
+  max-width: 40vw;
+  margin: 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--caption-gray);
+  text-align: right;
+  z-index: 10;
+}
 
 .photo-feed {
   display: flex;
