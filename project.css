@@ -762,7 +762,7 @@ body.gd-page {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  grid-template-rows: repeat(6, 1fr);
+  grid-template-rows: repeat(7, 1fr);
   gap: clamp(3px, 0.6vw, 8px);
 }
 
@@ -790,7 +790,7 @@ body.gd-page {
 @media (max-width: 860px) {
   .gd-grid {
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(9, 1fr);
+    grid-template-rows: repeat(10, 1fr);
   }
 }
 
@@ -800,6 +800,6 @@ body.gd-page {
   }
   .gd-grid {
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(12, 1fr);
+    grid-template-rows: repeat(13, 1fr);
   }
 }
